@@ -6,7 +6,7 @@ from Frame import *
 
 class GameObject:
 
-    def __init__(self, screen, position, pointInfo, frictionConst = .5):
+    def __init__(self, position, pointInfo, frictionConst = .5):
         self.points = []
         self.position = np.array(position)
         self.points = self.setUpPoints(pointInfo)
@@ -18,7 +18,6 @@ class GameObject:
         self.color = np.random.randint(0,255, 3).tolist() + [0.5]
 
         self.frame = Frame(self, pointInfo)
-        self.screen = screen
 
     def subDivide(self, pointInfo, subdivide = 0):
         for s in range(subdivide):

@@ -15,19 +15,19 @@ class GameRunner:
     center = (1280/2, 720/2)
 
     pointData = [PointInfo([100, 40], 1), PointInfo([-40, 40], 1), PointInfo([-40, -40], 1), PointInfo([40, -40], 1)]
-    simpleSquare = GameObject(screen, [300, 150], pointData)
-    simpleSquare2 = GameObject(screen, [400, 250], pointData)
+    simpleSquare = GameObject( [300, 150], pointData)
+    simpleSquare2 = GameObject( [400, 250], pointData)
 
     pointData2 = [PointInfo([500, 50], 1, isFixed=True), PointInfo([-300, 50], 1, isFixed=True), PointInfo([-300, 400], 1, isFixed=True),PointInfo([300, 400], 1, isFixed=True)]
-    simpleFloor = GameObject(screen, [500, 300], pointData2)
+    simpleFloor = GameObject( [500, 300], pointData2)
 
-    firstWheel = Wheel(screen, [500,0], 40, 10)
-    firstWheel2 = Wheel(screen, [600,0], 40, 10)
+    firstWheel = Wheel( [500,0], 40, 10)
+    firstWheel2 = Wheel( [600,0], 40, 10)
 
-    testPoint = PointMass(GameObject(screen, [0,0], []), PointInfo([0,0], 1))
+    testPoint = PointMass(GameObject( [0,0], []), PointInfo([0,0], 1))
 
     timeSinceStart = 0
-
+    time = 0
     objects = [simpleFloor, firstWheel, simpleSquare, simpleSquare2, firstWheel2]
     while running:
         # poll for events
@@ -49,6 +49,10 @@ class GameRunner:
         for obj in objects:
             obj.update()
             obj.doCollisions(objects)
+
+        if(time < pygame.time.get_ticks()):
+            time += 3000
+            objects.append(GameObject([500, -100], pointData))
 
         testPoint.position = np.array(pygame.mouse.get_pos())
         lines = simpleFloor.getLines()

@@ -5,17 +5,19 @@ import numpy
 from GameSettings import *
 import math
 from PointMass import *
+from Inflation import Inflation
 
-class Wheel(GameObject):
+class Wheel(GameObject, Inflation):
     accel = .5
 
-    def __init__(self, screen, position, radius, count, frictionConst= 0.5):
+    def __init__(self, position, radius, count, frictionConst= 0.5):
         pointarray = []
         for i in range(count):
             angle =  2 * np.pi * i / count
             pointarray.append(PointInfo([math.cos(angle) * radius, math.sin(angle) * radius], 1))
 
-        super().__init__(screen, position, pointarray, frictionConst)
+        super().__init__(position, pointarray, frictionConst)
+        super().setInflation(5)
 
     def update(self):
         if(Input.isKeyPressed('a')):
@@ -23,6 +25,7 @@ class Wheel(GameObject):
         if(Input.isKeyPressed('d')):
             self.torque(1)
         super().update()
+        super().doInflation(self.points)
 
     def torque(self, direction):
         for point in self.points:

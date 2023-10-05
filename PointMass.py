@@ -4,7 +4,7 @@ import pygame
 
 class PointMass:
 
-    damping = .1
+    damping = .99
 
     def __init__(self, parent, pointInfo):
         self.isFixed = pointInfo.isFixed
@@ -26,12 +26,12 @@ class PointMass:
         if(self.isFixed): 
             self.velocity = Vector.zero
             return
-
+        
         self.velocity = np.add(self.velocity, Vector.down * Settings.gravityConst * Physics.delta) #gravity
 
         for connection in self.connections:
             correctionConst = (connection.distance - self.getDist(connection.otherPoint))
-            correctionVel = self.getDirection(connection.otherPoint, True) * -correctionConst * self.strength * Physics.delta * 4
+            correctionVel = self.getDirection(connection.otherPoint, True) * -correctionConst * self.strength * Physics.delta * 5
 
             #if np.dot(self.velocity, correctionVel > 0): correctionVel *= self.damping
             self.velocity = np.add(self.velocity, correctionVel)
