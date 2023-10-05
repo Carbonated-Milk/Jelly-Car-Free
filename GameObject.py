@@ -111,9 +111,9 @@ class GameObject:
                 relVel = np.add(point.velocity, -avgVel)
                 avgFric = (self.frictionConst + otherObject.frictionConst)/2
                 projVel = -closestLine.projectOnLine(relVel) * avgFric
-                point.addForce(projVel)
-                closestLine.end1.addForce(-projVel)
-                closestLine.end2.addForce(-projVel)
+                # point.addForce(projVel)
+                # closestLine.end1.addForce(-projVel)
+                # closestLine.end2.addForce(-projVel)
 
                 #closestLine.end1.addAcceleration(point.velocity)
                 #closestLine.end2.addAcceleration(point.velocity)

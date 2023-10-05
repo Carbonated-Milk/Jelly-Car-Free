@@ -21,13 +21,14 @@ class GameRunner:
     pointData2 = [PointInfo([500, 50], 1, isFixed=True), PointInfo([-300, 50], 1, isFixed=True), PointInfo([-300, 400], 1, isFixed=True),PointInfo([300, 400], 1, isFixed=True)]
     simpleFloor = GameObject(screen, [500, 300], pointData2)
 
-    firstWheel = Wheel(screen, [500,0], 40, 3)
+    firstWheel = Wheel(screen, [500,0], 40, 10)
+    firstWheel2 = Wheel(screen, [600,0], 40, 10)
 
     testPoint = PointMass(GameObject(screen, [0,0], []), PointInfo([0,0], 1))
 
     timeSinceStart = 0
 
-    objects = [simpleFloor, firstWheel, simpleSquare, simpleSquare2]
+    objects = [simpleFloor, firstWheel, simpleSquare, simpleSquare2, firstWheel2]
     while running:
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window

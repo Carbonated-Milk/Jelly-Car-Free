@@ -33,7 +33,7 @@ class PointMass:
             correctionConst = (connection.distance - self.getDist(connection.otherPoint))
             correctionVel = self.getDirection(connection.otherPoint, True) * -correctionConst * self.strength * Physics.delta * 4
 
-            if np.dot(self.velocity, correctionVel > 0): correctionVel *= self.damping
+            #if np.dot(self.velocity, correctionVel > 0): correctionVel *= self.damping
             self.velocity = np.add(self.velocity, correctionVel)
             if not connection.otherPoint.isFixed: connection.otherPoint.velocity = np.add(connection.otherPoint.velocity, -correctionVel)
 
