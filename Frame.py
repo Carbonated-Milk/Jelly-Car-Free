@@ -19,7 +19,7 @@ class Frame:
         return framePoints
     
     def update(self):
-        self.position = self.parent.position
+        self.position = self.parent.getCenter()
         for point in self.framePoints:
             point.position = np.add(point.relPos, self.position)
         rot = self.getAvgAngle()
@@ -30,7 +30,7 @@ class Frame:
         for point, framePoint in zip(self.parent.points, self.framePoints):
             vecP = np.add(point.position, -self.position)
             vecPF = framePoint.relPos
-            pygame.draw.lines(Singleton.screen, [255,0,0], False, [point.getPosition(), self.position.tolist(), framePoint.getPosition()])
+            if Settings.debugMode:pygame.draw.lines(Singleton.screen, [255,0,0], False, Singleton.reMap([point.getPosition(), self.position.tolist(), framePoint.getPosition()]))
             try: addAngle = math.acos(np.dot(vecP, vecPF) / (np.linalg.norm(vecP) * np.linalg.norm(vecPF)))
             except: pass
             if(np.dot(np.matmul(Vector.rotate90,vecPF), vecP) < 0): addAngle = 2 * np.pi - addAngle
@@ -38,6 +38,7 @@ class Frame:
         return sumAngles / len(self.framePoints)
     
     def addForceToPoints(self, angleRad):
+        if not Physics.active: return
         radMat = Vector.getRotMatrix(angleRad)
         rotpoints = []
         for point, framePoint in zip(self.parent.points, self.framePoints):
@@ -46,7 +47,7 @@ class Frame:
             correctionVec = np.add(pointTransformed, -point.position)
             #point.addForce(correctionVec)
         
-        if Settings.debugMode: pygame.draw.polygon(Singleton.screen,[255, 0, 255], rotpoints, 7)
+        if Settings.debugMode: pygame.draw.polygon(Singleton.screen,[255, 0, 255], Singleton.reMap(rotpoints), 7)
 
 class FramePoint:
 

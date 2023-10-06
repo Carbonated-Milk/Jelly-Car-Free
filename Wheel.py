@@ -26,6 +26,7 @@ class Wheel(GameObject, Inflation):
             self.torque(1)
         super().update()
         super().doInflation(self.points)
+        #Singleton.cameraOffset = self.getPosition()
 
     def torque(self, direction):
         for point in self.points:

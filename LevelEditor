@@ -1,0 +1,142 @@
+import pygame
+from GameSettings import *
+import math
+from PointMass import *
+from GameObject import *
+import copy
+from Input import Input
+from Utility import *
+import numpy as np
+
+class LevelEditor:
+
+    @staticmethod
+    def runEditor():
+        
+        pygame.init()
+        Singleton.screen = pygame.display.set_mode((1280, 720))
+        running = True
+        clock = pygame.time.Clock()
+
+        Physics.active = False
+
+        workPoints = []
+
+        workModes = {'z' : WorkMode('standard', [255, 0, 100]),
+                    'x' : WorkMode('floor', [0, 255, 100]),
+                    'c' : WorkMode('car', [0, 0, 150])}
+        
+        pointModes = {'1' : PointDefault('standard', [0, 0, 255]),
+                      '2' : PointDefault('Fixed', [255, 0, 0], PointInfo(isFixed=True))}
+        
+        currentWorkMode = workModes['z']
+        currentPointMode = pointModes['1']
+
+        displaySize = 5
+
+        levelObjects = []
+
+        while running:
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+            Singleton.screen.fill('white')
+            Utility.blitAlpha(lambda s : s.fill(currentWorkMode.color), 50)
+
+            Utility.keyUpdate()
+            Singleton.moveScreenOffset(Input.getAxis(1))
+            LevelEditor.drawGrid()
+
+            for key in workModes.keys():
+                if Input.isKeyPressed(key):
+                    if currentWorkMode == workModes[key]: continue
+                    currentWorkMode = workModes[key]
+                    workPoints = []
+            
+            for key in pointModes.keys():
+                if Input.isKeyPressed(key):
+                    if currentPointMode == pointModes[key]: continue
+                    currentPointMode = pointModes[key]
+
+            if Input.mousePressed:
+                isDelete = False
+                for point in workPoints:
+                    if Vector.getMagnitude(Input.mousePosReal - point.position, True) < displaySize**2:
+                        workPoints.remove(point)
+                        isDelete = True
+                if not isDelete:
+                    newPoint = copy.copy(currentPointMode)
+                    newPoint.setPosition(Input.mousePosReal)
+                    workPoints.append(newPoint)
+                if len(workPoints) == currentWorkMode.maxPoints:
+                    workPoints.pop(0)
+
+            print(len(workPoints))
+
+            for i in range(-1, len(workPoints) - 1):
+                point = workPoints[i]
+                nextpoint = workPoints[i + 1]
+                pygame.draw.line(Singleton.screen, [0,0,0], Singleton.reMap(point.position), Singleton.reMap(nextpoint.position), displaySize)
+
+            for point in workPoints:
+                print(point.pointInfo.position, point.position)
+                drawColor = point.color
+                if Vector.getMagnitude(Input.mousePosReal - point.position, True) < displaySize**2: drawColor = [255,255,0]
+                pygame.draw.circle(Singleton.screen, drawColor, Singleton.reMap(point.position), displaySize)
+
+            if Input.isKeyPressed('enter') and len(workPoints) >= 3:
+                levelObjects.append(GameObject([0,0], [p.pointInfo for p in workPoints]))
+                workPoints = []
+
+            
+
+            for obj in levelObjects:
+                obj.draw()
+                print(obj.getCenter())
+
+            pygame.display.flip()
+
+            clock.tick(60)
+        
+
+    @staticmethod
+    def drawGrid(spacing = 100):
+        screenSize = Singleton.screenSize
+        screenMiddle = Singleton.screenMiddle
+        camOffset = Singleton.cameraOffset.copy()
+        screenMiddleFloored = np.asarray(camOffset)
+        screenMiddleFloored[0] = camOffset[0] % spacing #math.floor(camOffset[0] / spacing) * spacing
+        screenMiddleFloored[1] = camOffset[1] % spacing #math.floor(camOffset[1] / spacing) * spacing
+
+        for i in range(screenSize[1] // spacing + 2):
+            yCoord =  -screenMiddleFloored[1] + spacing * i
+            pygame.draw.line(Singleton.screen, [100,100,100], [screenMiddle[0] - screenSize[0]/2, yCoord],[screenMiddle[0] + screenSize[0]/2, yCoord], 2)
+
+        for i in range(screenSize[0] // spacing + 2):
+                    xCoord = -screenMiddleFloored[0] + spacing * i
+                    pygame.draw.line(Singleton.screen, [100,100,100], [xCoord, camOffset[1] - screenSize[1]/2], [xCoord, camOffset[1] + screenSize[1]], 2)
+
+class WorkMode():
+     
+    def __init__(self, name, color, maxPoints = 100):
+        self.name = name
+        self.color = color
+        self.maxPoints = maxPoints
+
+class PointDefault():
+     
+    def __init__(self, name, color, genericPointInfo = PointInfo()):
+        self.name = name
+        self.color = color
+        self.pointInfo = genericPointInfo
+
+    def setPosition(self, position):
+        self.position = np.array(position)
+        self.pointInfo.position = self.position
+        
+
+if __name__ == '__main__':
+    LevelEditor.runEditor()
+    

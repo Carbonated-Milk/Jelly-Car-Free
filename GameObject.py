@@ -6,7 +6,11 @@ from Frame import *
 
 class GameObject:
 
+    # def __init__(self, pointInfo, frictionConst = .5):
+    #     self.__init__([0,0], pointInfo, frictionConst = .5)
+
     def __init__(self, position, pointInfo, frictionConst = .5):
+        self.pointInfo = pointInfo
         self.points = []
         self.position = np.array(position)
         self.points = self.setUpPoints(pointInfo)
@@ -19,12 +23,13 @@ class GameObject:
 
         self.frame = Frame(self, pointInfo)
 
-    def subDivide(self, pointInfo, subdivide = 0):
+    def subDivide(self, pointInfo, subdivide = 1):
+        if len(pointInfo) == 0: return []
         for s in range(subdivide):
             for i in range(len(pointInfo) - 1, 0, -1):
                 pointInfo.insert(i, PointInfo((np.add(np.array(pointInfo[i].position), np.array(pointInfo[i - 1].position))/2).tolist()))
             pointInfo.insert(0, PointInfo((np.add(np.array(pointInfo[0].position), np.array(pointInfo[- 1].position))/2).tolist()))
-
+        return pointInfo
 
     def setUpPoints(self, pointInfo):
 
@@ -35,7 +40,6 @@ class GameObject:
                 newPoints[i].addConnection(newPoints[j])
 
         return newPoints
-
 
     def update(self):
         self.simulateAll()
@@ -49,34 +53,32 @@ class GameObject:
 
         for point in self.points:
             point.simulate()
-        
 
     def getCenter(self):
         positionSum = np.array([0,0])
         for point in self.points:
             positionSum = np.add(positionSum, point.position)
-        if(Settings.debugMode):pygame.draw.circle(Singleton.screen, [0,255,0], self.position.tolist(), 5)
+        if(Settings.debugMode):pygame.draw.circle(Singleton.screen, [0,255,0], Singleton.reMap(self.position.tolist()), 5)
         return positionSum / len(self.points)
             
-
     def draw(self):
         surface = Singleton.screen
         points = []
         for i in range(len(self.points)):
             points.append(self.points[i].getPosition())
             if(Settings.debugMode): 
-                pygame.draw.line(surface, [0,255, 255], self.points[i].getPosition(), np.add(self.points[i].position, self.points[i].velocity).tolist(), 5)
+                pygame.draw.line(surface, [0,255, 255], Singleton.reMap(self.points[i].getPosition()), Singleton.reMap(np.add(self.points[i].position, self.points[i].velocity).tolist()), 5)
                 for connection in self.points[i].connections:
-                    pygame.draw.line(surface, [255, 0, 0], self.points[i].getPosition(), connection.otherPoint.getPosition())
+                    pygame.draw.line(surface, [255, 0, 0], Singleton.reMap(self.points[i].getPosition()), Singleton.reMap(connection.otherPoint.getPosition()))
         if(Settings.debugMode):
-            pygame.draw.lines(surface, [0,0,0], True, points, 5)
-            pygame.draw.polygon(surface, [0,255,0], [self.topRight, [self.topRight[0], self.bottomLeft[1]], self.bottomLeft, [self.bottomLeft[0], self.topRight[1]]], 3)
+            pygame.draw.lines(surface, [0,0,0], True, Singleton.reMap(points), 5)
+            pygame.draw.polygon(surface, [0,255,0], Singleton.reMap([self.topRight, [self.topRight[0], self.bottomLeft[1]], self.bottomLeft, [self.bottomLeft[0], self.topRight[1]]]), 3)
         else:
             thickness = Settings.lineThickness
-            pygame.draw.polygon(surface, self.color, points, 0)
-            pygame.draw.lines(surface, [0,0,0], True, points, thickness)
+            pygame.draw.polygon(surface, self.color, Singleton.reMap(points), 0)
+            pygame.draw.lines(surface, [0,0,0], True, Singleton.reMap(points), thickness)
             for point in points:
-                pygame.draw.circle(surface, [0,0,0], point, thickness/2)
+                pygame.draw.circle(surface, [0,0,0], Singleton.reMap(point), thickness/2)
 
     def getTotalMass(self):
         sum = 0
@@ -175,6 +177,9 @@ class GameObject:
 
     def getPosition(self):
         return self.position.tolist()
+    
+    def __repr__(self) -> str:
+        return f'GameObject({self.position.tolist()}, {self.pointInfo.__repr__()}, {self.frictionConst})'
 
 class Line:
     def __init__(self, end1, end2):
@@ -198,7 +203,7 @@ class Line:
         if xVal <= checkPos[0]: return False
 
         if(screen != None):
-            pygame.draw.circle(screen, [255,50, 255], [xVal, checkPos[1]], 5)
+            pygame.draw.circle(screen, [255,50, 255], Singleton.reMap([xVal, checkPos[1]]), 5)
 
         return True
     

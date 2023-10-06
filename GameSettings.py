@@ -8,6 +8,7 @@ class Settings:
     lineThickness = 10
 
 class Physics:
+    active = True
     delta = .1
 
 class Vector:
@@ -19,10 +20,54 @@ class Vector:
 
     rotate90 = np.array([[0,-1],[1,0]])
 
+    @staticmethod
     def getRotMatrix(rad):
         cosRad = math.cos(rad)
         sinRad = math.sin(rad)
         return np.array([[cosRad,-sinRad],[sinRad,cosRad]])
     
+    @staticmethod
+    def addArrays(arrays):
+        arraySum = np.array(arrays[0])
+        for array in arrays[1:]:
+            arraySum = arraySum + np.array(array)
+        return arraySum.tolist()
+    
+    def getMagnitude(vec, returnSquared = False):
+        calcVec = vec if isinstance(vec, np.ndarray) else np.array(vec)
+        magnitude = np.dot(calcVec, calcVec)
+        if not returnSquared: magnitude = magnitude ** 1/2
+        return magnitude
+            
+
+    
 class Singleton:
     screen = None
+    screenSize = (1280, 720)
+    screenMiddle = (1280/2, 720/2)
+    cameraOffset = screenMiddle
+    cameraScale = 1
+
+
+    @staticmethod
+    def reMap(data):
+        if isinstance(data[0], list):
+            reMappedData = []
+            for coord in data:
+                newPos = Singleton.reMap(coord)
+                reMappedData.append(newPos)
+            return reMappedData
+        
+        return Singleton.mapSingle(data) #if number
+
+    @staticmethod 
+    def mapSingle(point):
+        return ((np.array(point) - np.array(Singleton.cameraOffset) + np.array(Singleton.screenMiddle))).tolist()
+    
+    @staticmethod 
+    def setScreenOffset(point):
+        Singleton.cameraOffset = np.array(Singleton.screenMiddle) + np.array(point)
+    
+    @staticmethod 
+    def moveScreenOffset(vec):
+        Singleton.cameraOffset = np.add(np.array(Singleton.cameraOffset), np.array([vec[0], -vec[1]]))

@@ -23,6 +23,8 @@ class PointMass:
         self.velocity = np.add(self.velocity, accelerationVector)
 
     def simulate(self):
+        if not Physics.active: return
+
         if(self.isFixed): 
             self.velocity = Vector.zero
             return
@@ -60,11 +62,14 @@ class PointMass:
         self.position = np.add(self.position, vector)
     
 class PointInfo:
-    def __init__(self, position, mass = 1, isFixed = False, strength = 1):
+    def __init__(self, position = np.array([0,0]), mass = 1, isFixed = False, strength = 1):
         self.position = position
         self.mass = mass
         self.isFixed = isFixed
         self.strength = strength
+
+    def __repr__(self) -> str:
+        return f'PointInfo({self.position}, {self.mass}, {self.isFixed}, {self.strength})'
 
 class PointConnection:
     def __init__(self, otherPoint, distance, strength = 1):
