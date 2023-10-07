@@ -67,7 +67,7 @@ class LevelEditor:
                         workPoints.remove(point)
                         isDelete = True
                 if not isDelete:
-                    newPoint = copy.copy(currentPointMode)
+                    newPoint = copy.deepcopy(currentPointMode)
                     newPoint.setPosition(Input.mousePosReal)
                     workPoints.append(newPoint)
                 if len(workPoints) == currentWorkMode.maxPoints:
@@ -94,7 +94,6 @@ class LevelEditor:
 
             for obj in levelObjects:
                 obj.draw()
-                print(obj.getCenter())
 
             pygame.display.flip()
 
@@ -134,7 +133,7 @@ class PointDefault():
 
     def setPosition(self, position):
         self.position = np.array(position)
-        self.pointInfo.position = self.position
+        self.pointInfo.position = np.array(position)
         
 
 if __name__ == '__main__':
