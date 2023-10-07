@@ -105,7 +105,7 @@ class LevelEditor:
 
     @staticmethod
     def openLevel(fileName):
-        fileLocation = LevelEditor.folderName + '\\' + fileName
+        fileLocation = LevelEditor.folderName + '\\' + fileName + '.txt'
         try:
             with open(fileLocation, 'x') as levelFile:
                 print('new level file created')
@@ -123,7 +123,7 @@ class LevelEditor:
 
     @staticmethod
     def saveLevel(fileName, objects):
-        fileLocation = LevelEditor.folderName + '\\' + fileName
+        fileLocation = LevelEditor.folderName + '\\' + fileName + '.txt'
         try:
             with open(fileLocation, 'x') as levelFile:
                 print('new level file created')
