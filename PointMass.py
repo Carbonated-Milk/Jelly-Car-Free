@@ -69,7 +69,7 @@ class PointInfo:
         self.strength = strength
 
     def __repr__(self) -> str:
-        return f'PointInfo({self.position}, {self.mass}, {self.isFixed}, {self.strength})'
+        return f'PointInfo(np.array({self.position.tolist()}), {self.mass}, {self.isFixed}, {self.strength})'
 
 class PointConnection:
     def __init__(self, otherPoint, distance, strength = 1):

@@ -1,0 +1,4 @@
+GameObject([0, 0], [PointInfo(np.array([562.0, 221.0]), 1, False, 1), PointInfo(np.array([479.0, 376.0]), 1, False, 1), PointInfo(np.array([734.0, 351.0]), 1, False, 1), PointInfo(np.array([735.0, 194.0]), 1, False, 1)], 0.5)
+GameObject([0, 0], [PointInfo(np.array([813.0, 195.0]), 1, False, 1), PointInfo(np.array([847.0, 350.0]), 1, False, 1), PointInfo(np.array([1021.0, 197.0]), 1, False, 1)], 0.5)
+GameObject([0, 0], [PointInfo(np.array([578.0, 550.0]), 1, False, 1), PointInfo(np.array([313.0, 292.0]), 1, False, 1), PointInfo(np.array([330.0, 482.0]), 1, False, 1)], 0.5)
+GameObject([0, 0], [PointInfo(np.array([732.0, 430.0]), 1, False, 1), PointInfo(np.array([774.0, 533.0]), 1, False, 1), PointInfo(np.array([855.0, 447.0]), 1, False, 1)], 0.5)

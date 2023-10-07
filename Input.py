@@ -7,7 +7,7 @@ from GameSettings import Singleton
 class Input:
     keys = {}
     singleKeys = 'abcdefghijklmnopqrstuvwxyz0123456789'
-    specialKeys = ['enter']
+    specialKeys = ['enter', 'ctrl']
     usedKeys = [k for k in singleKeys] + specialKeys
 
     @staticmethod

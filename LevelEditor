@@ -10,13 +10,16 @@ import numpy as np
 
 class LevelEditor:
 
+    folderName = 'Levels'
+
     @staticmethod
-    def runEditor():
+    def runEditor(fileName):
         
-        pygame.init()
-        Singleton.screen = pygame.display.set_mode((1280, 720))
-        running = True
-        clock = pygame.time.Clock()
+        if(Singleton.screen == None):
+            pygame.init()
+            Singleton.screen = pygame.display.set_mode((1280, 720))
+            running = True
+            clock = pygame.time.Clock()
 
         Physics.active = False
 
@@ -34,7 +37,8 @@ class LevelEditor:
 
         displaySize = 5
 
-        levelObjects = []
+        levelObjects = LevelEditor.openLevel(fileName)
+        
 
         while running:
 
@@ -73,15 +77,12 @@ class LevelEditor:
                 if len(workPoints) == currentWorkMode.maxPoints:
                     workPoints.pop(0)
 
-            print(len(workPoints))
-
             for i in range(-1, len(workPoints) - 1):
                 point = workPoints[i]
                 nextpoint = workPoints[i + 1]
                 pygame.draw.line(Singleton.screen, [0,0,0], Singleton.reMap(point.position), Singleton.reMap(nextpoint.position), displaySize)
 
             for point in workPoints:
-                print(point.pointInfo.position, point.position)
                 drawColor = point.color
                 if Vector.getMagnitude(Input.mousePosReal - point.position, True) < displaySize**2: drawColor = [255,255,0]
                 pygame.draw.circle(Singleton.screen, drawColor, Singleton.reMap(point.position), displaySize)
@@ -90,15 +91,49 @@ class LevelEditor:
                 levelObjects.append(GameObject([0,0], [p.pointInfo for p in workPoints]))
                 workPoints = []
 
-            
-
             for obj in levelObjects:
                 obj.draw()
+
+            if Input.isKeyPressed('ctrl') and Input.isKeyPressed('s'):
+                LevelEditor.saveLevel(fileName, levelObjects)
+                print('SAVED')
+
 
             pygame.display.flip()
 
             clock.tick(60)
+
+    @staticmethod
+    def openLevel(fileName):
+        fileLocation = LevelEditor.folderName + '\\' + fileName
+        try:
+            with open(fileLocation, 'x') as levelFile:
+                print('new level file created')
+                return
+        except:
+            pass
+
+        levelObjs = []
+        with open(fileLocation, 'r') as levelFile:
+            for line in levelFile.readlines():
+                levelObjs.append(eval(line.replace('\n', '')))
         
+        return levelObjs
+        
+
+    @staticmethod
+    def saveLevel(fileName, objects):
+        fileLocation = LevelEditor.folderName + '\\' + fileName
+        try:
+            with open(fileLocation, 'x') as levelFile:
+                print('new level file created')
+        except:
+            pass
+
+        with open(fileLocation, 'w') as levelFile:
+            for obj in objects:
+                levelFile.write(obj.__repr__() + '\n')
+            
 
     @staticmethod
     def drawGrid(spacing = 100):
@@ -137,5 +172,5 @@ class PointDefault():
         
 
 if __name__ == '__main__':
-    LevelEditor.runEditor()
+    LevelEditor.runEditor('test')
     

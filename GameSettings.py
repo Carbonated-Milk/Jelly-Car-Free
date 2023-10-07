@@ -4,7 +4,7 @@ import pygame
 
 class Settings:
     gravityConst = 20
-    debugMode = True
+    debugMode = False
     lineThickness = 10
 
 class Physics:
