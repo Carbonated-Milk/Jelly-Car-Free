@@ -7,7 +7,7 @@ from GameObject import *
 class GameRunner:
 
     @staticmethod
-    def runLevel(fileName):
+    def runLevel(fileName, inEditMode = False):
         GameManager.initialize()
         Physics.active = True
 
@@ -20,9 +20,12 @@ class GameRunner:
             for obj in Singleton.activeObjects:
                 obj.update()
 
-            if Input.isKeyPressed('e'): 
-                Singleton.levelSelect()
+            if Input.isKeyDown('e'): 
+                Singleton.runEditor(fileName) if inEditMode else Singleton.levelSelect()
                 break
+
+            if inEditMode and Input.isKeyPressed('q'):
+                Settings.debugMode = not Settings.debugMode
 
             GameManager.endStuff()
 

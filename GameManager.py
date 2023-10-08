@@ -1,6 +1,7 @@
 import pygame
 from GameSettings import *
 from Input import Input
+from Camera import *
 class GameManager:
 
     setUp = False
@@ -30,3 +31,4 @@ class GameManager:
     def beginningStuff():
         GameManager.checkRun()
         Input.updateInput()
+        Camera.cameraUpdate()

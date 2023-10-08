@@ -2,7 +2,7 @@ from GameManager import *
 from LevelManager import *
 import numpy as np
 from GameRunner import *
-
+from LevelEditor import *
 
 
 class LevelSelect:
@@ -15,6 +15,7 @@ class LevelSelect:
         GameManager.initialize()
         Singleton.screen.fill("cyan")
         Singleton.levelSelect = LevelSelect.runLevelSelect
+        
 
         levelIcons = [LevelIcon(fileName) for fileName in LevelManager.getAllLevels()]
 
@@ -31,14 +32,15 @@ class LevelSelect:
 
             for icon in levelIcons:
                 if icon.checkPressed():
-                    if(Input.isKeyPressed('ctrl')):
-                        pass#LevelEditor
+                    if(Input.isKeyDown('ctrl')):
+                        LevelEditor.runEditor(icon.fileName)
                     else:
                         GameRunner.runLevel(icon.fileName)
                     break
                 icon.draw()
             
             GameManager.endStuff()
+
 
 class LevelIcon:
 

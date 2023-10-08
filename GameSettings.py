@@ -45,33 +45,9 @@ class Singleton:
     screen = None
     screenSize = (1280, 720)
     screenCenter = (1280/2, 720/2)
-    cameraOffset = screenCenter
     cameraScale = 1
     running = True
     clock = None
     activeObjects = []
     levelSelect = None
-
-
-    @staticmethod
-    def reMap(data):
-        if isinstance(data[0], list):
-            reMappedData = []
-            for coord in data:
-                newPos = Singleton.reMap(coord)
-                reMappedData.append(newPos)
-            return reMappedData
-        
-        return Singleton.mapSingle(data) #if number
-
-    @staticmethod 
-    def mapSingle(point):
-        return ((np.array(point) - np.array(Singleton.cameraOffset) + np.array(Singleton.screenCenter))).tolist()
-    
-    @staticmethod 
-    def setScreenOffset(point):
-        Singleton.cameraOffset = np.array(Singleton.screenCenter) + np.array(point)
-    
-    @staticmethod 
-    def moveScreenOffset(vec):
-        Singleton.cameraOffset = np.add(np.array(Singleton.cameraOffset), np.array([vec[0], -vec[1]]))
+    runEditor = None

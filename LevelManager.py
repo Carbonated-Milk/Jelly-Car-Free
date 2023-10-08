@@ -1,5 +1,7 @@
 from GameObject import *
+from Wheel import *
 import os
+
 
 class LevelManager:
 
@@ -33,7 +35,7 @@ class LevelManager:
 
     @staticmethod
     def saveLevel(fileName, objects):
-        fileLocation = LevelManager.folderName + fileName + '.txt'
+        fileLocation = LevelManager.folderName + fileName
         try:
             with open(fileLocation, 'x') as levelFile:
                 print('new level file created')
