@@ -28,7 +28,7 @@ class Input:
 
     def mouseUpdate():
         Input.mousePos = np.array(pygame.mouse.get_pos())
-        Input.mousePosReal = Vector.addArrays([Input.mousePos, -np.array(Singleton.screenMiddle), Singleton.cameraOffset])
+        Input.mousePosReal = Vector.addArrays([Input.mousePos, -np.array(Singleton.screenCenter), Singleton.cameraOffset])
         
         if pygame.mouse.get_pressed(3)[0]:
             Input.mousePressed = not Input.mouseDown

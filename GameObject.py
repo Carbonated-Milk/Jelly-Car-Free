@@ -43,6 +43,7 @@ class GameObject:
 
     def update(self):
         self.simulateAll()
+        self.doCollisions(Singleton.activeObjects)
         self.frame.update()
         self.draw()
 

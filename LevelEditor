@@ -1,16 +1,14 @@
 import pygame
 from GameSettings import *
-import math
 from PointMass import *
 from GameObject import *
 import copy
 from Input import Input
 from Utility import *
 import numpy as np
+from LevelManager import LevelManager
 
 class LevelEditor:
-
-    folderName = 'Levels'
 
     @staticmethod
     def runEditor(fileName):
@@ -37,7 +35,7 @@ class LevelEditor:
 
         displaySize = 5
 
-        levelObjects = LevelEditor.openLevel(fileName)
+        levelObjects = LevelManager.openLevel(fileName)
         
 
         while running:
@@ -95,44 +93,12 @@ class LevelEditor:
                 obj.draw()
 
             if Input.isKeyPressed('ctrl') and Input.isKeyPressed('s'):
-                LevelEditor.saveLevel(fileName, levelObjects)
+                LevelManager.saveLevel(fileName, levelObjects)
                 print('SAVED')
-
 
             pygame.display.flip()
 
             clock.tick(60)
-
-    @staticmethod
-    def openLevel(fileName):
-        fileLocation = LevelEditor.folderName + '\\' + fileName + '.txt'
-        try:
-            with open(fileLocation, 'x') as levelFile:
-                print('new level file created')
-                return
-        except:
-            pass
-
-        levelObjs = []
-        with open(fileLocation, 'r') as levelFile:
-            for line in levelFile.readlines():
-                levelObjs.append(eval(line.replace('\n', '')))
-        
-        return levelObjs
-        
-
-    @staticmethod
-    def saveLevel(fileName, objects):
-        fileLocation = LevelEditor.folderName + '\\' + fileName + '.txt'
-        try:
-            with open(fileLocation, 'x') as levelFile:
-                print('new level file created')
-        except:
-            pass
-
-        with open(fileLocation, 'w') as levelFile:
-            for obj in objects:
-                levelFile.write(obj.__repr__() + '\n')
             
 
     @staticmethod

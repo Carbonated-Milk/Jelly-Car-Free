@@ -44,9 +44,13 @@ class Vector:
 class Singleton:
     screen = None
     screenSize = (1280, 720)
-    screenMiddle = (1280/2, 720/2)
-    cameraOffset = screenMiddle
+    screenCenter = (1280/2, 720/2)
+    cameraOffset = screenCenter
     cameraScale = 1
+    running = True
+    clock = None
+    activeObjects = []
+    levelSelect = None
 
 
     @staticmethod
@@ -62,11 +66,11 @@ class Singleton:
 
     @staticmethod 
     def mapSingle(point):
-        return ((np.array(point) - np.array(Singleton.cameraOffset) + np.array(Singleton.screenMiddle))).tolist()
+        return ((np.array(point) - np.array(Singleton.cameraOffset) + np.array(Singleton.screenCenter))).tolist()
     
     @staticmethod 
     def setScreenOffset(point):
-        Singleton.cameraOffset = np.array(Singleton.screenMiddle) + np.array(point)
+        Singleton.cameraOffset = np.array(Singleton.screenCenter) + np.array(point)
     
     @staticmethod 
     def moveScreenOffset(vec):

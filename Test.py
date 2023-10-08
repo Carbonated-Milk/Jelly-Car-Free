@@ -4,15 +4,17 @@ from PointMass import *
 import numpy as np
 from Wheel import Wheel
 from Input import Input
+from GameManager import GameManager
 
 class GameRunner:
 
-    pygame.init()
-    screen = pygame.display.set_mode((1280, 720))
-    Singleton.screen = screen
-    clock = pygame.time.Clock()
-    running = True
-    center = (1280/2, 720/2)
+    # pygame.init()
+    # screen = pygame.display.set_mode((1280, 720))
+    # Singleton.screen = screen
+    # clock = pygame.time.Clock()
+    # running = True
+    # center = (1280/2, 720/2)
+    GameManager.initialize()
 
 
     pointData = [PointInfo([100, 40], 1), PointInfo([-40, 40], 1), PointInfo([-40, -40], 1), PointInfo([40, -40], 1)]
@@ -31,16 +33,16 @@ class GameRunner:
     timeSinceStart = 0
     time = 0
     objects = [simpleFloor, firstWheel, simpleSquare, simpleSquare2, firstWheel2, simpleFloor2]
-    while running:
+    while Singleton.running:
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                Singleton.running = False
 
         # fill the screen with a color to wipe away anything from last frame
         Input.updateKeyPress()
-        screen.fill("white")
+        Singleton.screen.fill("white")
 
         # t = pygame.time.get_ticks()
         # Physics.delta = (t - timeSinceStart) / 1000.0
@@ -71,7 +73,7 @@ class GameRunner:
         #lines[0].doesIntersectRight(testPoint, screen)
         # flip() the display to put your work on screen
         pygame.display.flip()
-
-        clock.tick(60)  # limits FPS to 60
+        Singleton.clock.tick(60)
+        #clock.tick(60)  # limits FPS to 60
 
     pygame.quit()
