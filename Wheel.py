@@ -20,6 +20,7 @@ class Wheel(GameObject, Inflation):
 
         super().__init__(position, pointarray, frictionConst)
         super().setInflation(5)
+        self.offset = 10
 
     def update(self):
         if(Input.isKeyDown('a')):

@@ -49,12 +49,18 @@ class LevelEditor:
             Singleton.screen.fill('white')
             Utility.blitAlpha(lambda s : s.fill(currentWorkMode.color), 50)
             
-            moveMult = 2 if Input.isKeyDown('shift') else 1
-            Camera.moveScreenOffset(Input.getAxis(2 * moveMult))
+            shiftMult = 2 if Input.isKeyDown('shift') else 1
+            Camera.moveScreenOffset(Input.getAxis(2 * shiftMult * Camera.camSize))
             LevelEditor.drawGrid()
+
+            if Input.isKeyPressed('+') :
+                Camera.scaleTargetCameraSize(1.3, shiftMult)
+            if Input.isKeyPressed('-') :
+                Camera.scaleTargetCameraSize(1/1.3, shiftMult)
 
             if Input.isKeyDown('r'):
                 Camera.setScreenOffset([0,0])
+                Camera.setTargetCameraSize(1)
 
             for key in workModes.keys():
                 if Input.isKeyDown(key):
@@ -102,6 +108,7 @@ class LevelEditor:
 
             if Input.isKeyDown('ctrl'):
                 if Input.isKeyPressed('s') or Input.isKeyPressed('p') :
+                    levelObjects.sort(key=lambda obj: obj.offset)
                     LevelManager.saveLevel(fileName, levelObjects)
                     isSaved = True
                     if Input.isKeyPressed('p') :
@@ -119,20 +126,19 @@ class LevelEditor:
 
     @staticmethod
     def drawGrid(spacing = 100):
-        screenSize = Singleton.screenSize
-        screenMiddle = Singleton.screenCenter
-        camOffset = Camera.cameraOffset.copy()
-        screenMiddleFloored = np.asarray(camOffset)
-        screenMiddleFloored[0] = camOffset[0] % spacing #math.floor(camOffset[0] / spacing) * spacing
-        screenMiddleFloored[1] = camOffset[1] % spacing #math.floor(camOffset[1] / spacing) * spacing
+        topLeft, bottomRight = Camera.inverseReMap([[0,0], Singleton.screenSize])
+        topLeft = np.array(topLeft)
+        bottomRight = np.array(bottomRight)
+        flooredTopLeft = topLeft/spacing//1 * spacing
+        number = (bottomRight - topLeft) // spacing
 
-        for i in range(screenSize[1] // spacing + 2):
-            yCoord =  -screenMiddleFloored[1] + spacing * i
-            pygame.draw.line(Singleton.screen, [100,100,100], [screenMiddle[0] - screenSize[0]/2, yCoord],[screenMiddle[0] + screenSize[0]/2, yCoord], 2)
+        for i in range(int(number[1]) + 2):
+            yCoord =  flooredTopLeft[1] + spacing * i
+            pygame.draw.line(Singleton.screen, [100,100,100], Camera.reMap([topLeft[0], yCoord]),Camera.reMap([bottomRight[0], yCoord]), 2)
 
-        for i in range(screenSize[0] // spacing + 2):
-                    xCoord = -screenMiddleFloored[0] + spacing * i
-                    pygame.draw.line(Singleton.screen, [100,100,100], [xCoord, camOffset[1] - screenSize[1]/2], [xCoord, camOffset[1] + screenSize[1]], 2)
+        for i in range(int(number[0]) + 2):
+            xCoord = flooredTopLeft[0] + spacing * i
+            pygame.draw.line(Singleton.screen, [100,100,100], Camera.reMap([xCoord, topLeft[1]]), Camera.reMap([xCoord, bottomRight[1]]), 2)
 
 class WorkMode():
      

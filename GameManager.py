@@ -26,6 +26,10 @@ class GameManager:
     def endStuff():
         pygame.display.flip()
         Singleton.clock.tick(60)  # limits FPS to 60
+
+    # @staticmethod
+    # def updateDelta():
+
     
     @staticmethod
     def beginningStuff():

@@ -10,7 +10,7 @@ class GameObject:
     # def __init__(self, pointInfo, frictionConst = .5):
     #     self.__init__([0,0], pointInfo, frictionConst = .5)
 
-    def __init__(self, position, pointInfo, frictionConst = .5):
+    def __init__(self, position, pointInfo, frictionConst = .5, offset = 0):
         self.pointInfo = pointInfo
         self.points = []
         self.position = np.array(position)
@@ -23,6 +23,8 @@ class GameObject:
         self.color = np.random.randint(0,255, 3).tolist() + [0.5]
 
         self.frame = Frame(self, pointInfo)
+
+        self.offset = offset
 
     def subDivide(self, pointInfo, subdivide = 1):
         if len(pointInfo) == 0: return []
@@ -60,7 +62,7 @@ class GameObject:
         positionSum = np.array([0,0])
         for point in self.points:
             positionSum = np.add(positionSum, point.position)
-        if(Settings.debugMode):pygame.draw.circle(Singleton.screen, [0,255,0], Camera.reMap(self.position.tolist()), 5)
+        if(Settings.debugMode):pygame.draw.circle(Singleton.screen, [0,255,0], Camera.reMap(self.position.tolist(), self.offset), 5)
         return positionSum / len(self.points)
             
     def draw(self):
@@ -69,18 +71,18 @@ class GameObject:
         for i in range(len(self.points)):
             points.append(self.points[i].getPosition())
             if(Settings.debugMode): 
-                pygame.draw.line(surface, [0,255, 255], Camera.reMap(self.points[i].getPosition()), Camera.reMap(np.add(self.points[i].position, self.points[i].velocity).tolist()), 5)
+                pygame.draw.line(surface, [0,255, 255], Camera.reMap(self.points[i].getPosition(), self.offset), Camera.reMap(np.add(self.points[i].position, self.points[i].velocity).tolist(), self.offset), 5)
                 for connection in self.points[i].connections:
-                    pygame.draw.line(surface, [255, 0, 0], Camera.reMap(self.points[i].getPosition()), Camera.reMap(connection.otherPoint.getPosition()))
+                    pygame.draw.line(surface, [255, 0, 0], Camera.reMap(self.points[i].getPosition()), Camera.reMap(connection.otherPoint.getPosition(), self.offset))
         if(Settings.debugMode):
-            pygame.draw.lines(surface, [0,0,0], True, Camera.reMap(points), 5)
-            pygame.draw.polygon(surface, [0,255,0], Camera.reMap([self.topRight, [self.topRight[0], self.bottomLeft[1]], self.bottomLeft, [self.bottomLeft[0], self.topRight[1]]]), 3)
+            pygame.draw.lines(surface, [0,0,0], True, Camera.reMap(points, self.offset), 5)
+            pygame.draw.polygon(surface, [0,255,0], Camera.reMap([self.topRight, [self.topRight[0], self.bottomLeft[1]], self.bottomLeft, [self.bottomLeft[0], self.topRight[1]]], self.offset), 3)
         else:
             thickness = Settings.lineThickness
-            pygame.draw.polygon(surface, self.color, Camera.reMap(points), 0)
-            pygame.draw.lines(surface, [0,0,0], True, Camera.reMap(points), thickness)
+            pygame.draw.polygon(surface, self.color, Camera.reMap(points, self.offset), 0)
+            pygame.draw.lines(surface, [0,0,0], True, Camera.reMap(points, self.offset), thickness)
             for point in points:
-                pygame.draw.circle(surface, [0,0,0], Camera.reMap(point), thickness/2)
+                pygame.draw.circle(surface, [0,0,0], Camera.reMap(point, self.offset), thickness/2)
 
     def getTotalMass(self):
         sum = 0

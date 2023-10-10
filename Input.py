@@ -8,7 +8,7 @@ from Camera import *
 class Input:
     keys = {}
     singleKeys = 'abcdefghijklmnopqrstuvwxyz0123456789'
-    specialKeys = ['enter', 'ctrl', 'shift']
+    specialKeys = ['enter', 'ctrl', 'shift', '+', '-']
     usedKeys = [k for k in singleKeys] + specialKeys
 
     @staticmethod
