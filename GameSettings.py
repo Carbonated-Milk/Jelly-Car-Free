@@ -38,6 +38,12 @@ class Vector:
         magnitude = np.dot(calcVec, calcVec)
         if not returnSquared: magnitude = magnitude ** 1/2
         return magnitude
+    
+    def arrayDist(array1, array2):
+        a1 = np.array(array1)
+        a2 = np.array(array2)
+        a3 = a1 - a2
+        return np.linalg.norm(a3)
             
 
     

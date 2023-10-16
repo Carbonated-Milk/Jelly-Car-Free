@@ -21,10 +21,12 @@ class LevelEditor:
         Physics.active = False
 
         workPoints = []
+        selectedPoints = []
+        startMousePos = [-100,-100]
 
         workModes = {'z' : WorkMode('standard', [255, 0, 100]),
-                    'x' : WorkMode('floor', [0, 255, 100]),
-                    'c' : WorkMode('car', [0, 0, 150])}
+                    'x' : WorkMode('edit', [0, 255, 100]),
+                    'c' : WorkMode('delete', [0, 0, 150], removePoints = True)}
         
         pointModes = {'1' : PointDefault('standard', [0, 0, 255]),
                       '2' : PointDefault('Fixed', [255, 0, 0], PointInfo(isFixed=True))}
@@ -49,43 +51,74 @@ class LevelEditor:
             Singleton.screen.fill('white')
             Utility.blitAlpha(lambda s : s.fill(currentWorkMode.color), 50)
             
-            shiftMult = 2 if Input.isKeyDown('shift') else 1
-            Camera.moveScreenOffset(Input.getAxis(2 * shiftMult * Camera.camSize))
-            LevelEditor.drawGrid()
+            LevelEditor.editorBackground()
 
-            if Input.isKeyPressed('+') :
-                Camera.scaleTargetCameraSize(1.3, shiftMult)
-            if Input.isKeyPressed('-') :
-                Camera.scaleTargetCameraSize(1/1.3, shiftMult)
-
-            if Input.isKeyDown('r'):
-                Camera.setScreenOffset([0,0])
-                Camera.setTargetCameraSize(1)
-
+            #Handes Edit Modes
             for key in workModes.keys():
                 if Input.isKeyDown(key):
                     if currentWorkMode == workModes[key]: continue
                     currentWorkMode = workModes[key]
-                    workPoints = []
+                    if currentWorkMode.removePoints: workPoints = []
+                    selectedPoints = []
             
             for key in pointModes.keys():
                 if Input.isKeyDown(key):
                     if currentPointMode == pointModes[key]: continue
                     currentPointMode = pointModes[key]
 
-            if Input.mousePressed:
-                isDelete = False
+            #Does stuff
+            
+            match currentWorkMode.name:
+                case 'standard':
+                    if Input.mousePressed:
+                        isDelete = False
+                        clickedPoints = getClickedPoints()
+                        for point in clickedPoints:
+                            workPoints.remove(point)
+                            isDelete = True
+                        if not isDelete:
+                            newPoint = copy.deepcopy(currentPointMode)
+                            newPoint.setPosition(Input.mousePosReal)
+                            workPoints.append(newPoint)
+                        if len(workPoints) == currentWorkMode.maxPoints:
+                            workPoints.pop(0)
+                case 'edit':
+                    if Input.mousePressed:
+                        startMousePos = Input.mousePos
+                    if not Input.mouseDown:
+                        if Vector.arrayDist(Input.mousePos, startMousePos) < displaySize:
+                            addPointsToSelected(selectedPoints, getClickedPoints())
+                        else: 
+                            pass #find points inside box
+                        #add some kind of g grab and move
+                        #this code is starting to look really messy
+                case 'delete':
+                    #point = PointMass()
+                    #pass delete point that its on
+                    pass
+
+            def addPointsToSelected(selectedPoints, points):
+                if not Input.isKeyDown('shift'):
+                    selectedPoints = []
+                if isinstance(points, list):
+                    for p in points:
+                        if p not in selectedPoints:
+                            selectedPoints.append(p)
+                    return selectedPoints
+                if p in points:
+                    selectedPoints.remove(p)
+                else: selectedPoints.append(p)
+                return selectedPoints
+
+
+            def getClickedPoints():
+                returnPoints = []
                 for point in workPoints:
                     if Vector.getMagnitude(Input.mousePosReal - point.position, True) < displaySize**2:
-                        workPoints.remove(point)
-                        isDelete = True
-                if not isDelete:
-                    newPoint = copy.deepcopy(currentPointMode)
-                    newPoint.setPosition(Input.mousePosReal)
-                    workPoints.append(newPoint)
-                if len(workPoints) == currentWorkMode.maxPoints:
-                    workPoints.pop(0)
-
+                        returnPoints.append(point)
+                return returnPoints
+                                
+                        
             for i in range(-1, len(workPoints) - 1):
                 point = workPoints[i]
                 nextpoint = workPoints[i + 1]
@@ -93,7 +126,7 @@ class LevelEditor:
 
             for point in workPoints:
                 drawColor = point.color
-                if Vector.getMagnitude(Input.mousePosReal - point.position, True) < displaySize**2: drawColor = [255,255,0]
+                if Vector.getMagnitude(Input.mousePosReal - point.position, True) < displaySize**2 or point in selectedPoints: drawColor = [255,255,0]
                 pygame.draw.circle(Singleton.screen, drawColor, Camera.reMap(point.position), displaySize)
 
             pygame.draw.circle(Singleton.screen, [0,255,0] if isSaved else [255,0,0], [15,15], 7.5)
@@ -123,6 +156,20 @@ class LevelEditor:
 
             GameManager.endStuff()
             
+    @staticmethod
+    def editorBackground():
+        shiftMult = 2 if Input.isKeyDown('shift') else 1
+        Camera.moveScreenOffset(Input.getAxis(2 * shiftMult * Camera.camSize))
+        LevelEditor.drawGrid()
+
+        if Input.isKeyPressed('+') :
+            Camera.scaleTargetCameraSize(1.3, shiftMult)
+        if Input.isKeyPressed('-') :
+            Camera.scaleTargetCameraSize(1/1.3, shiftMult)
+
+        if Input.isKeyDown('r'):
+            Camera.setScreenOffset([0,0])
+            Camera.setTargetCameraSize(1)
 
     @staticmethod
     def drawGrid(spacing = 100):
@@ -142,10 +189,12 @@ class LevelEditor:
 
 class WorkMode():
      
-    def __init__(self, name, color, maxPoints = 100):
+    def __init__(self, name, color, maxPoints = 100, removePoints = False):
         self.name = name
         self.color = color
         self.maxPoints = maxPoints
+        self.removePoints = removePoints
+
 
 class PointDefault():
      
