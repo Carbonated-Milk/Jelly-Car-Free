@@ -8,18 +8,21 @@ class PointMass:
 
     def __init__(self, parent, pointInfo):
         self.isFixed = pointInfo.isFixed
-        self.velocity = np.array([0,0])
         self.mass = pointInfo.mass
-        self.parent = parent
-        self.position = pointInfo.position + parent.position
+        if self.isFixed:
+            self.mass = 10**10
+        self.velocity = np.array([0,0])
+        if parent != None:
+            self.parent = parent
+            self.position = pointInfo.position + parent.position
         self.strength = pointInfo.strength
         self.connections = []
 
     
     def addForce(self, forceVector):
-       self.addAcceleration(forceVector / self.mass)
+       self.addVelocity(forceVector / self.mass)
 
-    def addAcceleration(self, accelerationVector):
+    def addVelocity(self, accelerationVector):
         self.velocity = np.add(self.velocity, accelerationVector)
 
     def simulate(self):
@@ -33,7 +36,7 @@ class PointMass:
 
         for connection in self.connections:
             correctionConst = (connection.distance - self.getDist(connection.otherPoint))
-            correctionVel = self.getDirection(connection.otherPoint, True) * -correctionConst * self.strength * Physics.delta * 5
+            correctionVel = self.getDirection(connection.otherPoint, True) * -correctionConst * self.strength * Physics.delta * 1
 
             #if np.dot(self.velocity, correctionVel > 0): correctionVel *= self.damping
             self.velocity = np.add(self.velocity, correctionVel)

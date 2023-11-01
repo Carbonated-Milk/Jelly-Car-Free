@@ -15,7 +15,6 @@ class LevelSelect:
         GameManager.initialize()
         Singleton.screen.fill("cyan")
         Singleton.levelSelect = LevelSelect.runLevelSelect
-        
 
         levelIcons = [LevelIcon(fileName) for fileName in LevelManager.getAllLevels()]
 

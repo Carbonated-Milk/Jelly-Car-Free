@@ -27,13 +27,12 @@ class Frame:
         self.addForceToPoints(rot)
 
     def getAvgAngle(self):
-        return 0
         sumAngles = 0
         for point, framePoint in zip(self.parent.points, self.framePoints):
             vecP = np.add(point.position, -self.position)
             vecPF = framePoint.relPos
             if Settings.debugMode:pygame.draw.lines(Singleton.screen, [255,0,0], False, Camera.reMap([point.getPosition(), self.position.tolist(), framePoint.getPosition()]))
-            try: addAngle = math.acos(np.dot(vecP, vecPF) / (np.linalg.norm(vecP) * np.linalg.norm(vecPF)))
+            try: addAngle = (math.acos(np.dot(vecP, vecPF) / (np.linalg.norm(vecP) * np.linalg.norm(vecPF))) + 360 * 5)%360
             except: pass
             if(np.dot(np.matmul(Vector.rotate90,vecPF), vecP) < 0): addAngle = 2 * np.pi - addAngle
             sumAngles += addAngle
@@ -47,7 +46,8 @@ class Frame:
             pointTransformed = np.add(np.matmul(radMat, framePoint.relPos), self.position)
             rotpoints.append(pointTransformed)
             correctionVec = np.add(pointTransformed, -point.position)
-            #point.addForce(correctionVec)
+            if(np.dot(correctionVec, point.velocity - self.parent.getAvgVelocity()) > 1): continue
+            point.addForce(correctionVec)
         
         if Settings.debugMode: pygame.draw.polygon(Singleton.screen,[255, 0, 255], Camera.reMap(rotpoints), 7)
 

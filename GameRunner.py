@@ -3,6 +3,7 @@ from GameSettings import *
 from Input import *
 from LevelManager import *
 from GameObject import *
+from Car import Car
 
 class GameRunner:
 

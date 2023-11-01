@@ -7,10 +7,9 @@ from Camera import *
 
 class GameObject:
 
-    # def __init__(self, pointInfo, frictionConst = .5):
-    #     self.__init__([0,0], pointInfo, frictionConst = .5)
-
     def __init__(self, position, pointInfo, frictionConst = .5, offset = 0):
+        self.offset = offset
+
         self.pointInfo = pointInfo
         self.points = []
         self.position = np.array(position)
@@ -24,7 +23,8 @@ class GameObject:
 
         self.frame = Frame(self, pointInfo)
 
-        self.offset = offset
+        self.tag = None
+        self.noCollide = []
 
     def subDivide(self, pointInfo, subdivide = 1):
         if len(pointInfo) == 0: return []
@@ -57,6 +57,7 @@ class GameObject:
 
         for point in self.points:
             point.simulate()
+        self.getAvgVelocity()
 
     def getCenter(self):
         positionSum = np.array([0,0])
@@ -92,6 +93,7 @@ class GameObject:
     
     def doCollisions(self, objects):
         for obj in objects:
+            if obj.tag in self.noCollide: continue
             if obj is self: continue
             if not self.inBoundingBox(obj): continue
             self.collision(obj)
@@ -102,28 +104,47 @@ class GameObject:
 
         for point in self.points:
             if self.isInside(point, lines):
-                closestPos, closestLine, moveVec = self.getClosestLine(point, lines)
-                lerpPos = (point.getPosition()[0] - closestLine.end1.getPosition()[0]) / (closestLine.end2.getPosition()[0] - closestLine.end1.getPosition()[0] + .001)
+                self.fixOverlap(point, lines)
                 
-                totalMass = point.mass + closestLine.end1.mass + closestLine.end2.mass
+    def fixOverlap(self, point, lines):
+        closestPos, line, moveVec = self.getClosestLine(point, lines)
+        totalMass = point.mass + line.end1.mass + line.end2.mass
+        lerpPos = (point.getPosition()[0] - line.end1.getPosition()[0]) / (line.end2.getPosition()[0] - line.end1.getPosition()[0] + .001)
 
-                moveVec2 = closestPos - point.position
-                closestLine.end1.move(-moveVec2/2)# * (1 - closestLine.end1.mass / totalMass) * lerpPos)
-                closestLine.end2.move(-moveVec2/2)# * (1 - closestLine.end2.mass / totalMass) * (1 - lerpPos))
-                point.move(moveVec2/2)# * (1 - point.mass / totalMass))
-                point.velocity = Vector.zero
-                avgVel = np.add(closestLine.end1.velocity, closestLine.end2.velocity)/2
-                relVel = np.add(point.velocity, -avgVel)
-                avgFric = (self.frictionConst + otherObject.frictionConst)/2
-                projVel = -closestLine.projectOnLine(relVel) * avgFric
-                # point.addForce(projVel)
-                # closestLine.end1.addForce(-projVel)
-                # closestLine.end2.addForce(-projVel)
+        pointMove = 1 - point.mass / totalMass
+        end1Move = (1-lerpPos) * line.end1.mass / totalMass
+        end2Move = lerpPos * line.end2.mass / totalMass
 
-                #closestLine.end1.addAcceleration(point.velocity)
-                #closestLine.end2.addAcceleration(point.velocity)
-                #point.addAcceleration(-avgVel)
+        line.end1.move(-moveVec * end1Move)
+        line.end2.move(-moveVec * end2Move)
+        point.move(moveVec * pointMove)
 
+        # point.velocity = np.array([0,0]) #SUPER LAME BUT KINDA WORKS
+        # line.end1.velocity = np.array([0,0])
+        # line.end2.velocity = np.array([0,0])
+        
+        virtualVelocity = line.end1.velocity * line.end1.mass / line.getMass() + line.end2.velocity * line.end2.mass / line.getMass()
+        linepV = Vector.scalerProject(moveVec, virtualVelocity)
+        pointpV = Vector.scalerProject(moveVec, point.velocity)
+        newLineBouncyVelocity = (line.getMass() * linepV - point.mass * linepV + 2 * point.mass * pointpV)/(line.getMass() + point.mass)
+        newPointBouncyVelocity = (point.mass * pointpV - line.getMass() * pointpV + 2 * line.getMass() * linepV)/(line.getMass() + point.mass)
+
+        stiffVelocity = (line.getMass() * linepV + point.mass * pointpV)/(line.getMass() + point.mass)
+
+        bounciness = .1
+        pointTraction = .8
+        newLineVelocity = newLineBouncyVelocity * bounciness + stiffVelocity * (1 - bounciness)
+        newPointVelocity = newPointBouncyVelocity * bounciness + stiffVelocity * (1 - bounciness)
+
+        lineVelocity = newLineVelocity * moveVec + (virtualVelocity - Vector.project(moveVec, virtualVelocity)) * (1 - pointTraction) ** (abs(linepV - newLineVelocity) * np.linalg.norm(moveVec))
+        pVelocity = newPointVelocity * moveVec + (point.velocity - Vector.project(moveVec, point.velocity)) * (1 - pointTraction) ** (abs(pointpV - newPointVelocity) * np.linalg.norm(moveVec))
+
+        point.velocity = pVelocity
+        line.end1.velocity = lineVelocity + (line.end1.velocity - line.end2.velocity) / 2
+        line.end2.velocity = lineVelocity - (line.end1.velocity - line.end2.velocity) / 2
+
+        pygame.draw.line(Singleton.screen, [255,0,255], point.getPosition(), Vector.addArrays([-pVelocity,point.getPosition()]))
+        
     def calcBoundingBox(self):
         topRight = self.position.tolist()
         bottomLeft = self.position.tolist()
@@ -142,7 +163,6 @@ class GameObject:
                 if(other.bottomLeft[1] <= point[1] and point[1] <= other.topRight[1]):
                     return True
         return False
-
     
     def isInside(self, point, lines):
         return self.countInterSections(point, lines) % 2 != 0
@@ -151,37 +171,54 @@ class GameObject:
         numInterSects = 0
         for line in lines:
             if line.doesIntersectRight(point): numInterSects += 1
-        #if(numInterSects > 0): print(numInterSects)
         return numInterSects
         
     def getLines(self):
         lines = []
-        for i in range(len(self.points) - 1):
+        for i in range(-1,len(self.points) - 1):
             lines.append(Line(self.points[i], self.points[i+1]))
-        lines.append(Line(self.points[-1], self.points[0]))
         return lines
     
     def getClosestLine(self, point, lines):
         closest = 2**100
         closestLine = None
         closestPos = None
-        realDist = 10*15
         moveVec = None
-        lastOnLine = False
 
         for line in lines:
-            closePos, dist, moveVec, newRealDist, onLine = line.projectPointOnLine(point)
+            closePos, dist, vecDif = line.projectPointOnLine(point, True)
             if dist < closest: #lastOnLine and not onLine and newRealDist < closest or lastOnLine and onLine and dist < closest or not lastOnLine and onLine and dist < realDist or not lastOnLine and not onLine and newRealDist < realDist:# and newRealDist < realDist): 
                 closest = dist
                 closestLine = line
-                realDist = newRealDist
                 closestPos = closePos
-                lastOnLine = onLine
+                moveVec = vecDif
         return closestPos, closestLine, moveVec
 
     def getPosition(self):
         return self.position.tolist()
     
+    def getMass(self):
+        mass = 0
+        for point in self.points:
+            mass += point.mass
+        return mass
+
+    def getAvgVelocity(self):
+        ratio = 1
+        avgVel = np.array([0,0])
+        for point in self.points:
+            avgVel = np.add(avgVel,point.velocity)
+        return np.multiply(avgVel,1/len(self.points))
+
+    def addVelocity(self, vel):
+        for point in self.points:
+            point.velocity = np.add(point.velocity, vel)
+
+    def move(self, vector):
+        for point in self.points:
+            point.move(vector)
+        self.position = self.getCenter()
+
     def __repr__(self) -> str:
         return f'GameObject({self.position.tolist()}, {self.pointInfo.__repr__()}, {self.frictionConst})'
 
@@ -217,19 +254,24 @@ class Line:
         if np.dot(vel, direction) < 0: projectedDirection = -projectedDirection
         return projectedDirection
     
-    def projectPointOnLine(self, point):
-        direction = self.end1.getDirection(self.end2)
-        relDirection = self.end1.getDirection(point)
-        projectedDirection = np.dot(relDirection, direction) / np.dot(direction, direction) * direction
-        projPos = np.add(projectedDirection, self.end1.getPosition())
-        #if np.dot(projectedDirection, projectedDirection) > np.dot(direction,direction): return None Should be fine without
-        dif1 = self.end1.getPosition()[1] - projPos[1] #check that y's are the around the point
-        dif2 = self.end2.getPosition()[1] - projPos[1]
-        realDist = np.linalg.norm(point.position - projPos)
-        
-        wasOnLine = True
-        if(np.sign(dif1) == np.sign(dif2)): 
-            realDist = min(self.end1.getDist(point), self.end2.getDist(point))
-            wasOnLine == False
+    def projectPointOnLine(self, point, findClosest = False):
+        direction = self.end1.getDirection(self.end2) #vector from point 1 on line to point 2 on line
+        relDirection = self.end1.getDirection(point) #vector from point 1 to point
+        projectedDirection = np.dot(relDirection, direction) / np.dot(direction, direction) * direction # project vector on line
+        projPos = np.add(projectedDirection, self.end1.getPosition()) #add point 1 to get real world position
 
-        return projPos, np.linalg.norm(point.position - projPos), projPos - point.position, realDist, wasOnLine
+        if findClosest:
+            dif1 = self.end1.getPosition()[1] - projPos[1] #check that y's are the around the point
+            dif2 = self.end2.getPosition()[1] - projPos[1]
+            dif1y = self.end1.getPosition()[0] - projPos[0] #check that y's are the around the point
+            dif2y = self.end2.getPosition()[0] - projPos[0]
+            if(np.sign(dif1) == np.sign(dif2) and np.sign(dif1y) == np.sign(dif2y)): 
+                projPos = self.end1.position if self.end1.getDist(point) < self.end2.getDist(point) else self.end2.position
+
+        return projPos, np.linalg.norm(point.position - projPos), projPos - point.position
+    
+    def getMass(self):
+        return self.end1.mass + self.end2.mass
+    
+    def draw(self, color = [0,0,0], width = 1):
+        pygame.draw.line(Singleton.screen, color, self.end1.getPosition(), self.end2.getPosition(), width)

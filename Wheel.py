@@ -9,9 +9,9 @@ from Inflation import Inflation
 from Camera import Camera
 
 class Wheel(GameObject, Inflation):
-    accel = .5
+    accel = 1
 
-    def __init__(self, position, radius, count, frictionConst= 0.5):
+    def __init__(self, position, radius = 5, count = 10, frictionConst= 0.5):
         pointarray = []
         self.radius = radius
         for i in range(count):
@@ -20,7 +20,10 @@ class Wheel(GameObject, Inflation):
 
         super().__init__(position, pointarray, frictionConst)
         super().setInflation(5)
-        self.offset = 10
+        self.offset = 0
+
+        self.tag = 'wheel'
+        self.noCollide = ['car']
 
     def update(self):
         if(Input.isKeyDown('a')):

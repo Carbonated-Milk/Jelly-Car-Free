@@ -1,6 +1,7 @@
 from GameObject import *
 from Wheel import *
 import os
+from Car import Car
 
 
 class LevelManager:

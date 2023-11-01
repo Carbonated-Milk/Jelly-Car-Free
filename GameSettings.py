@@ -3,8 +3,8 @@ import math
 import pygame
 
 class Settings:
-    gravityConst = 20
-    debugMode = False
+    gravityConst = 10
+    debugMode = True
     lineThickness = 10
 
 class Physics:
@@ -44,6 +44,12 @@ class Vector:
         a2 = np.array(array2)
         a3 = a1 - a2
         return np.linalg.norm(a3)
+    
+    def project(v, u):
+        return v * np.dot(u, v) / np.dot(v, v)
+
+    def scalerProject(v,u):
+        return np.dot(u, v) / np.dot(v, v)
             
 
     

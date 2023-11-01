@@ -10,6 +10,7 @@ from LevelManager import LevelManager
 from GameManager import *
 from Wheel import *
 from GameRunner import *
+from Car import Car
 
 class LevelEditor:
 
@@ -93,9 +94,11 @@ class LevelEditor:
                         #add some kind of g grab and move
                         #this code is starting to look really messy
                 case 'delete':
-                    #point = PointMass()
+                    point = PointMass(None, PointInfo(Camera.inverseMap(Input.mousePos)))
+                    for object in levelObjects:
+                        if object.isInside(point):
+                            print("")
                     #pass delete point that its on
-                    pass
 
             def addPointsToSelected(selectedPoints, points):
                 if not Input.isKeyDown('shift'):
