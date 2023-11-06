@@ -3,12 +3,12 @@ from GameSettings import *
 from Input import *
 from LevelManager import *
 from GameObject import *
-from Car import Car
+from Car import *
+
 
 class GameRunner:
-
     @staticmethod
-    def runLevel(fileName, inEditMode = False):
+    def runLevel(fileName, inEditMode=False):
         GameManager.initialize()
         Physics.active = True
 
@@ -16,18 +16,16 @@ class GameRunner:
 
         while Singleton.running:
             GameManager.beginningStuff()
-            
-            Singleton.screen.fill('white')
+
+            Singleton.screen.fill("white")
             for obj in Singleton.activeObjects:
                 obj.update()
 
-            if Input.isKeyDown('e'): 
+            if Input.isKeyDown("e"):
                 Singleton.runEditor(fileName) if inEditMode else Singleton.levelSelect()
                 break
 
-            if inEditMode and Input.isKeyPressed('q'):
+            if inEditMode and Input.isKeyPressed("q"):
                 Settings.debugMode = not Settings.debugMode
 
             GameManager.endStuff()
-
-
